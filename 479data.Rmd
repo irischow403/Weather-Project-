@@ -1,0 +1,15 @@
+---
+title: "test479"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+weather_data = read.csv("479weather.csv")
+head(weather_data)
+```
+
