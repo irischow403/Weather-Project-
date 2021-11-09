@@ -1,0 +1,34 @@
+---
+title: "test479"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library("tidyverse")
+weather_data = read.csv("479weather.csv")
+library("lubridate")
+weather_data = weather_data %>% 
+  select(c("Date.time","Temperature", "Precipitation","Relative.Humidity","Cloud.Cover")) %>% 
+  mutate(Date.time = as.Date(Date.time, format="%m/%d/%Y"))
+head(weather_data)
+```
+
+
+```{r}
+y=weather_data$Precipitation
+N=length(weather_data$Date.time)
+
+library(rstan)
+stan_data=list(N=n,y=y)
+stan_model <- stan_model(file = "project_stan_test.stan")
+fit = sampling(object = stan_model,
+                    data = stan_data,
+                    iter = 2000, chains = 4)
+summary(fit)
+```
+
