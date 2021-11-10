@@ -1,0 +1,47 @@
+---
+title: "Weather project"
+author: "Tsz Yau Iris Chow"
+date: "11/5/2021"
+output: html_document
+---
+
+```{r}
+rm(list = ls())
+library("dplyr")
+library("tidyr")
+library(tidyverse)
+library("fastDummies")
+```
+
+
+
+```{r}
+library(readr)
+weather <- read_csv("weather_data_cleaned.csv")
+
+```
+Add a variable to jan. 1 if it is jan, 0 if it is not.
+Do the same for every month
+Make precipitation 0 and 1 values, use logistic model in stan code
+
+
+```{r}
+# Make precipitation 0 and 1 values
+weather$codedPrecipitation <- ifelse(weather$Precipitation > 0, 1, 0)
+```
+
+```{r}
+#Add a variable to jan. 1 if it is jan, 0 if it is not.
+weather$month <- sapply(weather$Date.time,substr, 6,7)
+
+
+weather <- dummy_cols(weather,select_columns = c("month"))
+
+
+```
+
+```{r}
+# change col names
+names(weather)[9:20] <- c("Jan","Feb","Mar","Apr","May","June","July","Aug","Sep","Oct","Nov","Dec")
+```
+
