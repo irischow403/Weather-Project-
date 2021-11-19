@@ -5,15 +5,23 @@ library(tidyverse)
 weather <- read_csv("weather2.csv")
 
 y <- weather[,"codedPrecipitation"]
-x <- weather[,"Temperature"]
-M <- length(weather)
+y_c <- rep(NA, times = M)
+for (m in 1:M) 
+{
+  y_c[m] <- weather$codedPrecipitation[m]
+}
+n <- length(y_c)
+x <- weather[,"Temperature"] #x1
+x2 <- weather[,"Jan"]
+#x2 = jan
+M <- length(weather$X1)
 e_vec <- rep(NA, times = M)
 
 for (m in 1:M) 
 {
   e_vec[m] <- weather$Temperature[m]
 }
-n <- length(y)
+n <- length(y_c)
 
 x_mean <- mean(e_vec)
 x_sd <- sd(e_vec)
@@ -27,10 +35,10 @@ sigma_std_alpha <- 1
 mu_std_beta <- -3
 sigma_std_beta <- 0.25
 
-fg_data <- list(n = n, y = y, std_x = std_x, x_mean = x_mean, x_sd = x_sd,
+fg_data <- list(n = n, y = y_c, std_x = std_x, x_mean = x_mean, x_sd = x_sd,
                 n_grid = n_grid, x_grid = x_grid,
                 mu_std_alpha = mu_std_alpha, sigma_std_alpha = sigma_std_alpha,
-                mu_std_beta = mu_std_beta, sigma_std_beta = sigma_std_beta)
+                mu_std_beta = mu_std_beta, sigma_std_beta = sigma_std_beta) #modify
 
 logistic_model <- stan_model(file = "logistic_single_predictor.stan")
 
@@ -68,7 +76,7 @@ hist(avg_kick_prob, breaks = 100,
 # How has our uncertainty about how FG success prob. changes as *function* of 
 # distance changed after we observed data?
 # We can look at the posterior predictive probabilities at each point in x_grid
-post_pred_grid <- extract(fg_fit, pars = "prob_grid")[["prob_grid"]]
+post_pred_grid <- rstan::extract(fg_fit, pars = "prob_grid")[["prob_grid"]]
 
 png("post_pred_400draw_weather.png", width = 9, height= 4, units = "in", res = 400)
 par(mar = c(3,3,2,1), mgp = c(1.8, 0.5, 0))

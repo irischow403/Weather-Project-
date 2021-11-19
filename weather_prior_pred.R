@@ -7,7 +7,7 @@ weather <- read_csv("weather2.csv")
 
 y <- weather[,"codedPrecipitation"]
 x <- weather[,"Temperature"]
-M <- length(weather)
+M <- length(weather$X1)
 e_vec <- rep(NA, times = M)
   
 for (m in 1:M) 

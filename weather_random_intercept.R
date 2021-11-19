@@ -1,4 +1,5 @@
 # What about a hierarchical intercept in our FG models?
+
 library(rstan)
 library("dplyr")
 library("tidyr")
@@ -6,15 +7,26 @@ library(tidyverse)
 weather <- read_csv("weather2.csv")
 
 y <- weather[,"codedPrecipitation"]
+M <- length(weather$X1)
+y_c <- rep(NA, times = M)
+for (m in 1:M) 
+{
+  y_c[m] <- weather$codedPrecipitation[m]
+}
 x <- weather[,"Temperature"]
-M <- length(weather)
+
+
+
+
 e_vec <- rep(NA, times = M)
 
 for (m in 1:M) 
 {
   e_vec[m] <- weather$Temperature[m]
 }
-n <- length(y)
+n <- length(y_c)
+
+
 
 x_mean <- mean(e_vec)
 
@@ -25,21 +37,23 @@ std_x <- (e_vec - x_mean)/x_sd # standardize our predictor
 x_grid <- seq(15, 75, by = 1) # create an equally space grid of potential distances for FG attempts
 n_grid <- length(x_grid) 
 
-weather[,"month"] <- factor(weather[,"month"]) # make it a factor
-month_names <- levels(weather[,"month"])
+
+#weather[,"month_num"] <- as.numeric(weather$month) # make it a factor
 weather_vec <- rep(NA, times = M)
 
 for (m in 1:M) 
 {
   weather_vec[m] <- weather$month[m]
 }
-weather[,"month_num"] <- as.numeric(weather_vec) # number the kickers sequentially
-month <- weather[,"month_num"]
+month_names <- as.numeric(weather_vec) # number the kickers sequentially
+
+
 
 J <- length(month_names) # how many total kickers are there in our dataset?
 
 
-mu_std_alpha <- 1.5
+
+mu_std_alpha <- 1.5#//change t to the weather
 sigma_std_alpha <- 1
 mu_std_beta <- -3
 sigma_std_beta <- 0.25
@@ -50,10 +64,11 @@ A <- 1
 
 hier_model <- stan_model(file = "logistic_single_predictor_random_intercept.stan")
 
-weather_data <- list(n = n, J = J, y = y, std_x = std_x, group_id = month,
+weather_data <- list(n = n, J = J, y = y_c, std_x = std_x, group_id = month_names,
                 x_mean = x_mean, x_sd = x_sd, n_grid = n_grid, x_grid = x_grid,
                 mu_std_alpha = mu_std_alpha, sigma_std_alpha = sigma_std_alpha,
                 nu = nu, A = A, mu_std_beta = mu_std_beta, sigma_std_beta = sigma_std_beta)
+
 
 # We don't want to save our samples of the auxiliary parameters
 # or the std_beta parameters
