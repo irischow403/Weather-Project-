@@ -26,10 +26,11 @@ std_x <- (temp_vec - x_mean)/x_sd # standardize our predictor
 x_grid <- seq(-20, 90, by = 1) # create an equally spaced grid of potential degrees for temperature on any given day.
 n_grid <- length(x_grid)
 
-mu_std_alpha <- 0
-sigma_std_alpha <- 1    #eventually adjust these 
-mu_std_beta <- 0        # four prior params
-sigma_std_beta <- 1
+mu_std_alpha <- -0.53 #log-odds of probability of precipitation on any day (.37)
+sigma_std_alpha <- 1    # have no prior knowledge or estimate of standard deviation to change from 1
+mu_std_beta <- 0.41        # predicted the probability of rain as 68 degrees (one standard deviation  over the mean temperature,) to be .1 larger
+# than the mean probablity of precipitation (p=.47) and took the log odds of that probability (log odds = -.12) and subtracted mu_std_alpha 
+sigma_std_beta <- 1       # again, did not have prior knowledge to influence the sigma value
 
 precip_data <- list(n = M, y = precipitation_vec, 
                 std_x = std_x, x_mean = x_mean, x_sd = x_sd, n_grid = n_grid, x_grid = x_grid,
