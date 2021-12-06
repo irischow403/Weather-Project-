@@ -8,15 +8,8 @@ y <- weather[,"codedPrecipitation"]
 x <- weather[,"Temperature"]
 M <- length(weather$X1) #Number of days in data set (total rows)
 
-temp_vec <- rep(NA, times = M) #Stores temp values as numeric
-for (m in 1:M) {
-  temp_vec[m] <- weather$Temperature[m]
-}
-precipitation_vec <- rep(NA, times = M) #Stores coded precipitation values as numeric
-for (m in 1:M) {
-  precipitation_vec[m] <- weather$codedPrecipitation[m]
-}
-
+temp_vec <-  weather$Temperature
+precipitation_vec <- weather$codedPrecipitation
 
 x_mean <- mean(temp_vec)
 x_sd <- sd(temp_vec)
@@ -33,7 +26,7 @@ weather[,"months_num"] <- as.numeric(unlist(weather[,"month2"])) #number the mon
 month <- pull(weather[,"month2"])
 
 
-J <- nrow(month_num) # ensure that there are only 12 months in our dataset
+J <- length(month_names) # ensure that there are only 12 months in our dataset
 
 
 mu_std_alpha <- -0.53   #log-odds probability of precipitation on any day (.37)
@@ -48,24 +41,26 @@ A <- 1                  #?
 hier_model <- stan_model(file = "logistic_single_predictor_random_intercept.stan")
 
 precip_data <- list(n = M, J = J, y = precipitation_vec,
-                    std_x = std_x, group_id = month, x_mean = x_mean,
+                    std_x = std_x, group_id = as.numeric(month), x_mean = x_mean,
                     x_sd = x_sd, n_grid = n_grid, x_grid = x_grid, 
-                    mu_std_alpha = mu_std_alpha, sigma_std_alpha = sigma_std_alpa,
+                    mu_std_alpha = mu_std_alpha, sigma_std_alpha = sigma_std_alpha,
                     nu = nu, A = A, mu_std_beta = mu_std_beta, sigma_std_beta = sigma_std_beta)
 
 # We don't want to save our samples of the auxiliary parameters
 # or the std_beta parameters
 # To tell Stan which samples to save, we use the pars argument
 hier_fit <- sampling(object = hier_model, 
-                     data = fg_data,
-                     pars = c("std_alpha", "alpha", "beta", "prob_grid")) 
+                     data = precip_data,
+                     pars = c("std_alpha", "alpha", "beta", "prob_grid"),
+                     iter = 500, chains = 2
+                     ) 
 # we have tons and tons of parameters so instead of printing out all of our Rhats
 # we will look at the range of Rhats
 
 range(summary(hier_fit)[[1]][,"Rhat"])
 
 
-std_alpha_samples <- extract(hier_fit, pars = "std_alpha")[["std_alpha"]]
+std_alpha_samples <- rstan::extract(hier_fit, pars = "std_alpha")[["std_alpha"]]
 #std_alpha_samples is a 4000 x J matrix
 colnames(std_alpha_samples) <- month_names
 
@@ -75,7 +70,7 @@ boxplot(1/(1 + exp(-1 * std_alpha_samples)), pch = 16, cex = 0.5, medlwd = 0.5,
         main = "Posteriors of month's baseline precip. probs. ")
 dev.off()
 
-post_pred_samples <- extract(hier_fit, pars = "prob_grid")[["prob_grid"]]
+post_pred_samples <- rstan::extract(hier_fit, pars = "prob_grid")[["prob_grid"]]
 
 # post_pred_samples is a 3 dimension array!
 # 1st dimension indexes posterior sample
