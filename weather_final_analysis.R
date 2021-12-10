@@ -138,3 +138,16 @@ dim(post_pred_samples)
 # to the 3rd dimension of post_pred_samples
 dimnames(post_pred_samples)[[2]] <- c(month_names, "new_month") 
 
+################################################################################
+## MSE and R^2 ##
+################################################################################
+# Let's get the posterior predictive draws of ystar
+post_pred_samples <- rstan::extract(hier_fit, pars = "prob_grid")[["prob_grid"]]
+#need to figure out why it is 13 instead of
+post_pred_mean <- apply(post_pred_samples, MARGIN = 2, FUN = mean)
+
+# Compute the mean square error
+y = as.data.frame(y)
+mean( (y[,1] - post_pred_mean)^2 )
+#compute the R square
+1-mean( (y[,1] - post_pred_mean)^2 )/mean( (y[,1] - mean(y[,1]))^2 )
