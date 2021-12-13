@@ -144,10 +144,11 @@ dimnames(post_pred_samples)[[2]] <- c(month_names, "new_month")
 # Let's get the posterior predictive draws of ystar
 post_pred_samples <- rstan::extract(hier_fit, pars = "prob_grid")[["prob_grid"]]
 #need to figure out why it is 13 instead of
-post_pred_mean <- apply(post_pred_samples, MARGIN = 2, FUN = mean)
+post_pred_mean <- apply(post_pred_samples, MARGIN = 2, FUN = mean)[12]
 
 # Compute the mean square error
+#y_i - Y_i(month)(mean)
 y = as.data.frame(y)
-mean( (y[,1] - post_pred_mean)^2 )
+mean( (y[,1] - post_pred_mean[1:12])^2 )
 #compute the R square
 1-mean( (y[,1] - post_pred_mean)^2 )/mean( (y[,1] - mean(y[,1]))^2 )
